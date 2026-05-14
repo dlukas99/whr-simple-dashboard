@@ -1,0 +1,134 @@
+:root {
+  --bg: #f6f2ea;
+  --text: #1d1d1d;
+  --accent: #2d6a4f;
+  --accent-2: #1b4332;
+  --muted: #6b6b6b;
+  --card: #ffffff;
+  --border: #e1dcd2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Georgia", "Times New Roman", serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #f6f2ea 0%, #efe7dc 100%);
+}
+
+.header {
+  padding: 20px 28px 10px;
+}
+
+.header h1 {
+  margin: 0 0 4px;
+  letter-spacing: 0.5px;
+}
+
+.header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 12px 28px 8px;
+}
+
+.control-group {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.control-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.control-group select,
+.control-group input[type="range"],
+.control-group button {
+  width: 100%;
+}
+
+.control-group button {
+  margin-top: 8px;
+  border: none;
+  padding: 8px 10px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.control-group button:hover {
+  background: var(--accent-2);
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 10px 28px 28px;
+}
+
+.chart {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  min-height: 320px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+}
+
+.axis path,
+.axis line {
+  stroke: #888;
+}
+
+.axis text {
+  fill: #333;
+  font-size: 12px;
+}
+
+.legend {
+  font-size: 12px;
+}
+
+.current-year {
+  stroke: #333;
+  stroke-dasharray: 3 4;
+}
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  color: #222;
+}
+
+@media (max-width: 720px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+}

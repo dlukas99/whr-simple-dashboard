@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WHR Simple Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <header class="header">
+      <h1>World Happiness (2015-2023)</h1>
+      <p>Simple comparison + timeline animation</p>
+    </header>
+
+    <section class="controls">
+      <div class="control-group">
+        <label for="countrySelect">Choose countries:</label>
+        <select id="countrySelect" multiple size="6"></select>
+      </div>
+
+      <div class="control-group">
+        <label for="metricSelect">Metric:</label>
+        <select id="metricSelect">
+          <option value="Happiness Score">Happiness Score</option>
+          <option value="GDP">GDP</option>
+          <option value="Social Support">Social Support</option>
+          <option value="Life Expectancy">Life Expectancy</option>
+          <option value="Freedom">Freedom</option>
+          <option value="Generosity">Generosity</option>
+          <option value="Corruption">Corruption</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="yearRange">Year: <span id="yearLabel"></span></label>
+        <input id="yearRange" type="range" min="2015" max="2023" step="1" value="2015" />
+        <button id="playBtn" type="button">Play</button>
+      </div>
+    </section>
+
+    <main class="charts">
+      <div class="chart" id="lineChart"></div>
+      <div class="chart" id="barChart"></div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
