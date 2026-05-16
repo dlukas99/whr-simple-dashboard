@@ -6,11 +6,11 @@
     <title>WHR Simple Dashboard</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
   </head>
   <body>
     <header class="header">
       <h1>World Happiness (2015-2023)</h1>
-      <p>Simple comparison + timeline animation</p>
     </header>
 
     <section class="controls">
@@ -42,6 +42,9 @@
     <main class="charts">
       <div class="chart" id="lineChart"></div>
       <div class="chart" id="barChart"></div>
+      <div class="chart map-chart" id="mapChart">
+        <h2 class="chart-title">Happiness heatmap</h2>
+      </div>
     </main>
 
     <script src="app.js"></script>

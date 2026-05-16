@@ -1,23 +1,31 @@
+// Izvori podataka i osnovne postavke
 const FILE_PATH = "WHRFinal.json";
+const WORLD_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const MAX_COUNTRIES = 4;
 
 const margin = { top: 30, right: 20, bottom: 100, left: 60 };
 const lineSize = { width: 520, height: 380 };
 const barSize = { width: 520, height: 320 };
+const mapSize = { width: 960, height: 520 };
 
+// Stanje aplikacije
 let rawData = [];
+let worldFeatures = [];
 let currentYear = 2015;
 let playing = false;
 let timerId = null;
 
+// Kontrole
 const countrySelect = document.getElementById("countrySelect");
 const metricSelect = document.getElementById("metricSelect");
 const yearRange = document.getElementById("yearRange");
 const yearLabel = document.getElementById("yearLabel");
 const playBtn = document.getElementById("playBtn");
 
+// Zajednicke skale
 const color = d3.scaleOrdinal(d3.schemeTableau10);
 
+// Linijski i stupcasti graf (SVG postavke)
 const lineSvg = d3
   .select("#lineChart")
   .append("svg")
@@ -28,8 +36,19 @@ const barSvg = d3
   .append("svg")
   .attr("viewBox", `0 0 ${barSize.width} ${barSize.height}`);
 
+// Karta (SVG + projekcija)
+const mapSvg = d3
+  .select("#mapChart")
+  .append("svg")
+  .attr("viewBox", `0 0 ${mapSize.width} ${mapSize.height}`);
+
+// Grupe i slojevi grafa
 const lineG = lineSvg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 const barG = barSvg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+const mapG = mapSvg.append("g");
+const mapDefs = mapSvg.append("defs");
+const legendGradient = mapDefs.append("linearGradient").attr("id", "mapLegendGradient");
+const mapLegend = mapSvg.append("g").attr("class", "map-legend");
 
 const lineInner = {
   width: lineSize.width - margin.left - margin.right,
@@ -52,12 +71,25 @@ const dotLayer = lineG.append("g").attr("class", "dots");
 const legendLayer = lineG.append("g").attr("class", "legend");
 const yearLayer = lineG.append("g").attr("class", "year-marker");
 
+// Tooltipovi
 const lineContainer = d3.select("#lineChart");
 const tooltip = lineContainer.append("div").attr("class", "tooltip").style("opacity", 0);
+
+const mapContainer = d3.select("#mapChart");
+const mapTooltip = mapContainer.append("div").attr("class", "tooltip").style("opacity", 0);
+
+// Geo projekcija
+const projection = d3
+  .geoNaturalEarth1()
+  .scale(160)
+  .translate([mapSize.width / 2, mapSize.height / 2]);
+
+const geoPath = d3.geoPath().projection(projection);
 
 const barLayer = barG.append("g").attr("class", "bars");
 const barLabelLayer = barG.append("g").attr("class", "bar-labels");
 
+// Pomocne funkcije
 function toNumber(value) {
   const num = Number(value);
   return Number.isFinite(num) ? num : null;
@@ -75,6 +107,36 @@ function parseRow(row) {
     Generosity: toNumber(row.Generosity),
     Corruption: toNumber(row.Corruption),
   };
+}
+
+// Uskladivanje naziva drzava
+const countryAliases = {
+  "United States of America": "United States",
+  "Russian Federation": "Russia",
+  "Korea, Republic of": "South Korea",
+  "Korea, Democratic People's Republic of": "North Korea",
+  "Viet Nam": "Vietnam",
+  "Cote d'Ivoire": "Ivory Coast",
+  "Czechia": "Czech Republic",
+  "Iran (Islamic Republic of)": "Iran",
+  "Syrian Arab Republic": "Syria",
+  "Bolivia (Plurinational State of)": "Bolivia",
+  "United Republic of Tanzania": "Tanzania",
+  "Republic of Moldova": "Moldova",
+  "Lao People's Democratic Republic": "Laos",
+  "Brunei Darussalam": "Brunei",
+  "North Macedonia": "Macedonia",
+  "Cabo Verde": "Cape Verde",
+  "Eswatini": "Swaziland",
+  "The Gambia": "Gambia",
+};
+
+function countryKey(name) {
+  return name ? name.toLowerCase().trim() : "";
+}
+
+function resolveCountryName(name) {
+  return countryAliases[name] || name;
 }
 
 function getSelectedCountries() {
@@ -113,6 +175,7 @@ function closestPoint(values, targetYear) {
   }, null);
 }
 
+// Linijski graf
 function updateLineChart(series, metric) {
   const allValues = series.flatMap((s) => s.values.map((d) => d[metric]));
   const yDomain = d3.extent(allValues);
@@ -252,6 +315,7 @@ function updateLineChart(series, metric) {
     .attr("y2", lineInner.height);
 }
 
+// Stupcasti graf
 function updateBarChart(series, metric) {
   const barData = series
     .map((s) => {
@@ -324,6 +388,103 @@ function updateBarChart(series, metric) {
     .text((d) => d.value.toFixed(2));
 }
 
+// Karta (heatmap)
+function updateMap() {
+  if (!worldFeatures.length) return;
+
+  const yearData = rawData.filter((d) => d.Year === currentYear && d["Happiness Score"] !== null);
+  const valueByCountry = new Map(yearData.map((d) => [countryKey(d.Country), d["Happiness Score"]]));
+  const extent = d3.extent(yearData, (d) => d["Happiness Score"]);
+  const mapColor = d3.scaleSequential(d3.interpolateYlOrRd).domain(extent);
+
+  const paths = mapG.selectAll("path").data(worldFeatures, (d) => d.id);
+
+  const merged = paths
+    .join(
+      (enter) =>
+        enter
+          .append("path")
+          .attr("d", geoPath)
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 0.4),
+      (update) => update,
+      (exit) => exit.remove()
+    )
+    .attr("d", geoPath);
+
+  merged
+    .transition()
+    .duration(400)
+    .attr("fill", (d) => {
+      const name = resolveCountryName(d.properties.name);
+      const value = valueByCountry.get(countryKey(name));
+      return value !== undefined ? mapColor(value) : "#e6e1d9";
+    });
+
+  merged
+    .on("mouseenter", function (event, d) {
+      d3.select(this).attr("stroke", "#333").attr("stroke-width", 1.2);
+    })
+    .on("mousemove", (event, d) => {
+      const name = resolveCountryName(d.properties.name);
+      const value = valueByCountry.get(countryKey(name));
+      const [cx, cy] = d3.pointer(event, mapContainer.node());
+      const label = value !== undefined ? `${name}: ${value.toFixed(2)}` : `${name}: n/a`;
+
+      mapTooltip
+        .style("opacity", 1)
+        .style("background", "#fff")
+        .style("color", "#222")
+        .style("left", `${cx + 12}px`)
+        .style("top", `${cy - 12}px`)
+        .text(label);
+    })
+    .on("mouseleave", function () {
+      d3.select(this).attr("stroke", "#fff").attr("stroke-width", 0.4);
+      mapTooltip.style("opacity", 0);
+    });
+
+  const legendWidth = 220;
+  const legendHeight = 10;
+  const legendX = mapSize.width - legendWidth - 26;
+  const legendY = mapSize.height - 30;
+  const legendScale = d3.scaleLinear().domain(extent).range([0, legendWidth]);
+
+  legendGradient
+    .attr("x1", "0%")
+    .attr("x2", "100%")
+    .attr("y1", "0%")
+    .attr("y2", "0%");
+
+  legendGradient
+    .selectAll("stop")
+    .data([0, 0.25, 0.5, 0.75, 1])
+    .join("stop")
+    .attr("offset", (d) => `${d * 100}%`)
+    .attr("stop-color", (d) => mapColor(legendScale.invert(d * legendWidth)));
+
+  mapLegend.attr("transform", `translate(${legendX},${legendY})`);
+
+  mapLegend
+    .selectAll("rect")
+    .data([null])
+    .join((enter) => enter.append("rect"))
+    .attr("width", legendWidth)
+    .attr("height", legendHeight)
+    .attr("fill", "url(#mapLegendGradient)")
+    .attr("stroke", "#ccc")
+    .attr("rx", 4)
+    .attr("ry", 4);
+
+  mapLegend
+    .selectAll("g")
+    .data([null])
+    .join((enter) => enter.append("g"))
+    .attr("transform", `translate(0,${legendHeight})`)
+    .call(d3.axisBottom(legendScale).ticks(4));
+}
+
+// Globalno osvjezavanje
 function updateCharts() {
   const metric = metricSelect.value;
   const selectedCountries = getSelectedCountries();
@@ -331,8 +492,10 @@ function updateCharts() {
   const series = buildSeries(selectedCountries, metric);
   updateLineChart(series, metric);
   updateBarChart(series, metric);
+  updateMap();
 }
 
+// Animacija
 function stepYear() {
   currentYear = currentYear < 2023 ? currentYear + 1 : 2015;
   updateYearLabel();
@@ -350,6 +513,7 @@ function togglePlay() {
   }
 }
 
+// Postavke kontrola
 function handleCountryChange() {
   const selected = Array.from(countrySelect.selectedOptions);
   if (selected.length > MAX_COUNTRIES) {
@@ -379,9 +543,12 @@ function initControls(countries) {
   playBtn.addEventListener("click", togglePlay);
 }
 
+// Pokretanje
 async function init() {
-  const data = await d3.json(FILE_PATH);
+  const [data, world] = await Promise.all([d3.json(FILE_PATH), d3.json(WORLD_URL)]);
   rawData = data.map(parseRow).filter((d) => d.Country && d.Year);
+
+  worldFeatures = topojson.feature(world, world.objects.countries).features;
 
   const countries = Array.from(new Set(rawData.map((d) => d.Country))).sort();
   color.domain(countries);
