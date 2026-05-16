@@ -76,8 +76,8 @@ body {
 
 .charts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(360px, 1fr));
+  gap: 22px;
   padding: 10px 28px 28px;
 }
 
@@ -144,6 +144,10 @@ svg {
 
 @media (max-width: 720px) {
   .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .charts {
     grid-template-columns: 1fr;
   }
 }
