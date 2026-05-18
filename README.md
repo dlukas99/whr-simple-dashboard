@@ -5,11 +5,11 @@ Jednostavna web vizualizacija podataka iz World Happiness Report (WHR) skupa pod
 Aplikacija je hostana i možete joj pristupiti ovdje: https://dlukas99.github.io/whr-simple-dashboard/
 
 ## Dataset
-WHRFinal.json sadrži godišnje podatke po državama, uključlujući Happiness Score te povezane faktore poput GDP, Social Support, Life Expectancy, Freedom, Generosity i Corruption.
+WHRFinal.json sadrži godišnje podatke po državama, uključujući Happiness Score te povezane faktore poput GDP, Social Support, Life Expectancy, Freedom, Generosity i Corruption.
 
 ## Sadržaj stranice
 - linijski graf s prikazom odabranih država kroz godine
-- stupcasti graf za usporedbu država u odabranoj godini
+- stupčasti graf za usporedbu država u odabranoj godini
 - heatmap svijeta za Happiness Score u odabranoj godini
 - kontrole za odabir država, metrike i godine te Play/Pause animaciju
 
@@ -18,5 +18,5 @@ Napredne funkcionalnosti:
 - mogućnost usporedbe podataka za dva ili više odabira
 
 Napredno ponašanje:
-- implementirati UPDATE podataka umjesto DELETE and INSERT - svjesna upotreba D3.js obrasca Enter, Exit and Update
+- implementiran UPDATE podataka umjesto DELETE and INSERT - svjesna upotreba D3.js obrasca Enter, Exit and Update
 - korištenje tranzicija umjesto instantne promjene
