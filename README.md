@@ -2,6 +2,8 @@
 
 Jednostavna web vizualizacija podataka iz World Happiness Report (WHR) skupa podataka za razdoblje 2015-2023. Fokus je na usporedbi država kroz vrijeme i brzom uvidu u razine sreće po svijetu.
 
+Aplikacija je hostana i možete joj pristupiti ovdje: https://dlukas99.github.io/whr-simple-dashboard/
+
 ## Dataset
 WHRFinal.json sadrži godišnje podatke po državama, uključlujući Happiness Score te povezane faktore poput GDP, Social Support, Life Expectancy, Freedom, Generosity i Corruption.
 
